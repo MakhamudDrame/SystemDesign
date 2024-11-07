@@ -1,7 +1,7 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Date
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import select
-from datetime import date
+
 
 Base = declarative_base()
 
@@ -35,7 +35,7 @@ class Order(Base):
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
     price = Column(Float, nullable=False)
-    date_to_client=Column(date, nullable=False)
+    date_to_client=Column(Date, nullable=False)
 
 def get_user(session : sessionmaker, username:str) -> User:
     return session.query(User).filter(User.username == username).first()
@@ -145,7 +145,7 @@ def get_order_all(session: sessionmaker) -> list[Order]:
     return session.query(Order).all()
 
 def create_order(session: sessionmaker, user_id: int,  name: String, 
-                   description: String, price: float,date_to_client: date) -> Order:
+                   description: String, price: float,date_to_client: Date) -> Order:
     """Создать новый заказ"""
     new_order = Order(
         user_id=user_id,
@@ -161,7 +161,7 @@ def create_order(session: sessionmaker, user_id: int,  name: String,
     return new_order
 
 def update_new_order(session: sessionmaker, order_id:int,  name: String= None, 
-                   description: String= None, price: float= None,date_to_client: date=None) -> Order:
+                   description: String= None, price: float= None,date_to_client: Date=None) -> Order:
     """Обновить заказ по  ID"""
     order = session.query(Order).filter(Order.id == order_id).first()
     
