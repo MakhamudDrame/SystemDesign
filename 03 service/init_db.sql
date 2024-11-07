@@ -59,3 +59,12 @@ INSERT INTO orders (id, email, name, price, date_to_client) VALUES
 (1,'ella@example.com','engish_lesson', 3000,'07.11.2024' ),
 (3,'donalde@example.com','laundry of all',1000, '01.11.2024'),
 (4,'anna@example.com','shoe repair', 2000, '03.11.2024');
+
+-- Запросы к базе данных
+
+SELECT * FROM users;
+SELECT * FROM services;
+SELECT * FROM orders;
+SELECT COUNT(*) FROM users;
+SELECT COUNT(*) FROM services;
+SELECT COUNT(*) FROM orders;
