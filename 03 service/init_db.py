@@ -1,71 +1,104 @@
--- Создание базы данных
-CREATE DATABASE archdb;
+import time
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from profi_ru_db import UserDB, ServiceDB
+from passlib.context import CryptContext
+from sqlalchemy.orm import sessionmaker
+from profi_ru_db import Base, UserDB, ServiceDB, OrderDB
 
--- Подключение к базе данных
-\c archdb;
+# Настройка PostgreSQL
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/profi_ru_db"
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Настройка паролей
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Создание таблиц
+Base.metadata.create_all(bind=engine)
+
+# Загрузка тестовых данных
+def load_test_data():
+    db = SessionLocal()
+
+    # Проверка существования пользователя перед добавлением
+    def add_user(username, first_name, last_name, hashed_password, email):
+        user = db.query(UserDB).filter(UserDB.username == username).first()
+        if not user:
+            user = UserDB(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                hashed_password=hashed_password,
+                email=email,
+            )
+            db.add(user)
+
+    # Создание пользователей
+    add_user(
+        username="admin",
+        first_name="Admin",
+        last_name="Admin",
+        hashed_password=pwd_context.hash("admin"),
+        email="admin@profi.com",
+    )
+
+    add_user(
+        username="user1",
+        first_name="Ivan",
+        last_name="Ivanov",
+        hashed_password=pwd_context.hash("user123"),
+        email="ivan.ivanov@profi.com",
+    )
+
+    add_user(
+        username="user2",
+        first_name="Kirill",
+        last_name="Kotov",
+        hashed_password=pwd_context.hash("user456"),
+        email="kirill.kotov@profi.com",
+    )
+
+    # Создание продуктов
+    def add_service(name, price, description, stock):
+        service = db.query(ServiceDB).filter(ServiceDB.name == name).first()
+        if not service:
+            service = ServiceDB(
+                name=name,
+                price=price,
+                description=description,
+                stock=stock,
+            )
+            db.add(service)
+
+    add_service("English", 1500, "English in  skype", 25)
+    add_service("Math", 2000, "Math in skype", 18)
+    add_service("Site", 6500, "Site in Wordpress", 31)
+
+    # Создание корзин
+    def add_order(user_id):
+        order = db.query(OrderDB).filter(OrderDB.user_id == user_id).first()
+        if not order:
+            order = OrderDB(user_id=user_id)
+            db.add(order)
+
+    add_order(1)  # admin
+    add_order(2)  # user1
+    add_order(3)  # user2
+
+    # Создание заказов
+    def add_order(user_id, total_price):
+        order = db.query(OrderDB).filter(OrderDB.user_id == user_id, OrderDB.status == "pending").first()
+        if not order:
+            order = OrderDB(user_id=user_id, total_price=total_price, status="pending")
+            db.add(order)
+
+    add_order(1, 1499.99)  # admin
+    add_order(2, 699.99)  # user1
+
+    db.commit()
+    db.close()
 
 
--- Создание таблицы пользователей с полями для хранения хешированного пароля
-CREATE TABLE  users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    hashed_password VARCHAR(255) NOT NULL,
-    age INTEGER
-);
-
--- Индекс для быстрого поиска по имени пользователя
-CREATE INDEX IF NOT EXISTS idx_username ON users(username);
-
--- Создание таблицы  услуг
-CREATE TABLE IF NOT EXISTS services (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    description VARCHAR(500) NOT NULL,
-    price FLOAT NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS id_services ON users(username);
-
-
--- Создание таблицы заказов
-CREATE TABLE IF NOT EXISTS orders (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    name VARCHAR(500) NOT NULL,
-    price FLOAT NOT NULL,
-    date_to_client DATE NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS id_user_id ON orders(user_id);
-
-
--- Тестовые данные
-
-INSERT INTO users (id,username, email, hashed_password, age) VALUES
-( 1,'ella', 'ella@example.com', '$2b$12$KIX/1Q0B1gYH3C8.x0ZQ1Oe1fS0f8s7H9r9a5e6q2gG1H5Xv4e5kO', 30 ),
-(2, 'mike', 'mike@example.com', '$2b$12$D9U1Zc4F3lW4uD9gF3lW6uOe7f5s8s7H9r9a5e6q2gG1H5Xv4e5kO', 21),
-(3, 'donald', 'donalde@example.com', '$2b$12$A3L2F0Q0B1gYH3C8.x0ZQ1Oe1fS0f8s7H9r9a5e6q2gG1H5Xv4e5kO', 50),
-( 4, 'anna', 'anna@example.com', '$2b$12$E5U2Zc4F3lW4uD9gF3lW6uOe7f5s8s7H9r9a5e6q2gG1H5Xv4e5kO', 28);
-
-
-INSERT INTO services (id, name, description, price) VALUES
-(1, 'engish_lesson','online lessons',3000),
-(2, 'shoe repair','repair all shoes',2500),
-(3,'laundry','laundry of all',1000);
-
-INSERT INTO orders (id, email, name, price, date_to_client) VALUES
-(2,'mike@example.com','engish_lesson', 3000, '11.11.2024'),
-(1,'ella@example.com','engish_lesson', 3000,'07.11.2024' ),
-(3,'donalde@example.com','laundry of all',1000, '01.11.2024'),
-(4,'anna@example.com','shoe repair', 2000, '03.11.2024');
-
--- Запросы к базе данных
-
-SELECT * FROM users;
-SELECT * FROM services;
-SELECT * FROM orders;
-SELECT COUNT(*) FROM users;
-SELECT COUNT(*) FROM services;
-SELECT COUNT(*) FROM orders;
+if __name__ == "__main__":
+    load_test_data()
