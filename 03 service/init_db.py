@@ -4,6 +4,7 @@ CREATE DATABASE archdb;
 -- Подключение к базе данных
 \c archdb;
 
+
 -- Создание таблицы пользователей с полями для хранения хешированного пароля
 CREATE TABLE  users (
     id SERIAL PRIMARY KEY,
