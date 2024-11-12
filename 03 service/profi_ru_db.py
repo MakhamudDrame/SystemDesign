@@ -10,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Настройка PostgreSQL
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/ozon"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/profi_ru_db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
