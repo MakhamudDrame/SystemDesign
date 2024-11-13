@@ -71,7 +71,6 @@ class ServiceDB(Base):
     price = Column(Float, nullable=False)
     
 
-
 # Определение модели заказа
 class OrderDB(Base):
     __tablename__ = 'order'
