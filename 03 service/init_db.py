@@ -59,7 +59,6 @@ def load_test_data():
         email="kirill.kotov@profi.com",
     )
 
-    
     # Создание продуктов
     def add_service(name, price, description, stock):
         service = db.query(ServiceDB).filter(ServiceDB.name == name).first()
@@ -94,12 +93,8 @@ def load_test_data():
             order = OrderDB(user_id=user_id, total_price=total_price, status="pending")
             db.add(order)
 
-    add_order(1, 1499.99)  # admin
-    add_order(2, 699.99)  # user1
+    add_order(1, 1500)  # admin
+    add_order(2, 4000)  # user1
 
     db.commit()
     db.close()
-
-
-if __name__ == "__main__":
-    load_test_data()
