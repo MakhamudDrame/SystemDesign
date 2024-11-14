@@ -59,23 +59,22 @@ def load_test_data():
         email="kirill.kotov@profi.com",
     )
 
-    # Создание продуктов
-    def add_service(name, price, description, stock):
+ # Создание услуги
+    def add_service(name, price, description):
         service = db.query(ServiceDB).filter(ServiceDB.name == name).first()
         if not service:
             service = ServiceDB(
                 name=name,
                 price=price,
-                description=description,
-                stock=stock,
+                description=description
             )
             db.add(service)
 
-    add_service("English", 1500, "English in  skype", 25)
-    add_service("Math", 2000, "Math in skype", 18)
-    add_service("Site", 6500, "Site in Wordpress", 31)
+    add_service("English", 1500, "English in  skype")
+    add_service("Math", 2000, "Math in skype")
+    add_service("Site", 6500, "Site in Wordpress")
 
-    # Создание корзин
+    # Создание заказа
     def add_order(user_id):
         order = db.query(OrderDB).filter(OrderDB.user_id == user_id).first()
         if not order:
@@ -94,7 +93,12 @@ def load_test_data():
             db.add(order)
 
     add_order(1, 1500)  # admin
-    add_order(2, 4000)  # user1
+    add_order(2, 2000)  # user1
 
     db.commit()
     db.close()
+
+
+if __name__ == "__main__":
+    load_test_data()
+
