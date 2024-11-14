@@ -53,13 +53,13 @@ def load_test_data():
 
     add_user(
         username="user2",
-        first_name="Kirill",
-        last_name="Kotov",
+        first_name="Igor",
+        last_name="Pavlov",
         hashed_password=pwd_context.hash("user456"),
-        email="kirill.kotov@profi.com",
+        email="igor.pavlov@profi.com",
     )
 
- # Создание услуги
+    # Создание услуги
     def add_service(name, price, description):
         service = db.query(ServiceDB).filter(ServiceDB.name == name).first()
         if not service:
@@ -74,7 +74,7 @@ def load_test_data():
     add_service("Math", 2000, "Math in skype")
     add_service("Site", 6500, "Site in Wordpress")
 
-    # Создание заказа
+    # Создание корзин
     def add_order(user_id):
         order = db.query(OrderDB).filter(OrderDB.user_id == user_id).first()
         if not order:
@@ -101,4 +101,5 @@ def load_test_data():
 
 if __name__ == "__main__":
     load_test_data()
+
 
