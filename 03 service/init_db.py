@@ -59,6 +59,7 @@ def load_test_data():
         email="kirill.kotov@profi.com",
     )
 
+    
     # Создание продуктов
     def add_service(name, price, description, stock):
         service = db.query(ServiceDB).filter(ServiceDB.name == name).first()
