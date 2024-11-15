@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: archdb
-      POSTGRES_DB: profi_db
+      POSTGRES_DB: profi
     ports:
       - "5432:5432"
     volumes:
@@ -19,8 +19,8 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: archdb
-      POSTGRES_DB: profi_db
-      SQLALCHEMY_DATABASE_URL: postgresql://postgres:archdb@db/profi_db
+      POSTGRES_DB: profi
+      SQLALCHEMY_DATABASE_URL: postgresql://postgres:archdb@db/profi
     depends_on:
       - db
     command: >
