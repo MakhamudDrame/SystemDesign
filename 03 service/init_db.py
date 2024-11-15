@@ -1,9 +1,7 @@
 import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from profi_ru_db import UserDB, ServiceDB
 from passlib.context import CryptContext
-from sqlalchemy.orm import sessionmaker
 from profi_ru_db import Base, UserDB, ServiceDB, OrderDB
 
 # Настройка PostgreSQL
