@@ -10,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Настройка PostgreSQL
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/profi_ru_db"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/ozon"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -28,6 +28,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Настройка OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 # Модели данных
 class User(BaseModel):
     id: int
@@ -44,41 +45,36 @@ class Service(BaseModel):
     price: float
     description: Optional[str] = None
 
+
 class Order(BaseModel):
     id: int
     user_id: int
-    order_ids: List[int]
+    product_ids: List[int]
+
 
 # SQLAlchemy models
-
 class UserDB(Base):
-    __tablename__ = 'users'
-    
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     first_name = Column(String)
     last_name = Column(String)
     hashed_password = Column(String)
     email = Column(String, unique=True, index=True)
-    
-    
-# Определение модели услуги
-class ServiceDB(Base):
-    __tablename__ = 'service'
-    
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    price = Column(Float, nullable=False)
-    
 
-# Определение модели заказа
-class OrderDB(Base):
-    __tablename__ = 'order'
-    
+
+class ServiceDB(Base):
+    __tablename__ = "service"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    order_ids = Column(String)
+    name = Column(String, index=True)
+    price = Column(Float)
+    description = Column(String, index=True)
+
+
+class OrderDB(BaseModel):
+    id: int
+    user_id: int
+    order_ids: List[int]
 
 
 # Зависимости для получения текущего пользователя
@@ -97,7 +93,7 @@ async def get_current_client(token: str = Depends(oauth2_scheme)):
             return username
     except JWTError:
         raise credentials_exception
-    
+
 
     # Создание и проверка JWT токенов
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -109,6 +105,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
 
 
 # Маршрут для получения токена
@@ -144,7 +141,6 @@ def create_user(user: User, current_user: str = Depends(get_current_client)):
     return user
 
 
-
 # Поиск пользователя по логину
 @app.get("/users/{username}", response_model=User)
 def get_user_by_username(username: str, current_user: str = Depends(get_current_client)):
@@ -156,10 +152,9 @@ def get_user_by_username(username: str, current_user: str = Depends(get_current_
     return user
 
 
-
 # Создание услуги
 @app.post("/service", response_model=Service)
-def create_product(service: Service, current_user: str = Depends(get_current_client)):
+def create_service(service: Service, current_user: str = Depends(get_current_client)):
     db = SessionLocal()
     db_service = ServiceDB(**service.dict())
     db.add(db_service)
@@ -171,12 +166,11 @@ def create_product(service: Service, current_user: str = Depends(get_current_cli
 
 # Получение списка услуг
 @app.get("/service", response_model=List[Service])
-def get_user_service(user_id: int, current_user: str = Depends(get_current_client)):
+def get_services( current_user: str = Depends(get_current_client)):
     db = SessionLocal()
     services = db.query(ServiceDB).filter(ServiceDB.user_id == user_id).all()
     db.close()
     return services
-
 
 
 
@@ -199,7 +193,6 @@ def add_to_order(user_id: int, service_id: int, current_user: str = Depends(get_
     db.refresh(order)
     db.close()
     return order
-
 
 
 # Получение заказов пользователя
