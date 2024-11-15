@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from profi_ru import Base, UserDB, ServiceDB, OrderDB
 
 # Настройка PostgreSQL
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/ozon_db"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/profi_db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
