@@ -2,10 +2,10 @@ import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from passlib.context import CryptContext
-from profi_ru_db import Base, UserDB, ServiceDB, OrderDB
+from profi_ru import Base, UserDB, ServiceDB, OrderDB
 
 # Настройка PostgreSQL
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/profi_ru_db"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/ozon_db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -37,7 +37,7 @@ def load_test_data():
         username="admin",
         first_name="Admin",
         last_name="Admin",
-        hashed_password=pwd_context.hash("admin"),
+        hashed_password=pwd_context.hash("admin001"),
         email="admin@profi.com",
     )
 
@@ -58,13 +58,14 @@ def load_test_data():
     )
 
     # Создание услуги
-    def add_service(name, price, description):
+    def add_service(name, price, description,stock):
         service = db.query(ServiceDB).filter(ServiceDB.name == name).first()
         if not service:
             service = ServiceDB(
                 name=name,
                 price=price,
-                description=description
+                description=description,
+                stock=stock,
             )
             db.add(service)
 
@@ -72,7 +73,7 @@ def load_test_data():
     add_service("Math", 2000, "Math in skype")
     add_service("Site", 6500, "Site in Wordpress")
 
-    # Создание корзин
+    # Создание заказа
     def add_order(user_id):
         order = db.query(OrderDB).filter(OrderDB.user_id == user_id).first()
         if not order:
@@ -83,15 +84,7 @@ def load_test_data():
     add_order(2)  # user1
     add_order(3)  # user2
 
-    # Создание заказов
-    def add_order(user_id, total_price):
-        order = db.query(OrderDB).filter(OrderDB.user_id == user_id, OrderDB.status == "pending").first()
-        if not order:
-            order = OrderDB(user_id=user_id, total_price=total_price, status="pending")
-            db.add(order)
 
-    add_order(1, 1500)  # admin
-    add_order(2, 2000)  # user1
 
     db.commit()
     db.close()
@@ -99,5 +92,4 @@ def load_test_data():
 
 if __name__ == "__main__":
     load_test_data()
-
 
