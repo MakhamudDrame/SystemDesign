@@ -49,7 +49,7 @@ class Service(BaseModel):
 class Order(BaseModel):
     id: int
     user_id: int
-    product_ids: List[int]
+    service_ids: List[int]
 
 
 # SQLAlchemy models
@@ -72,9 +72,10 @@ class ServiceDB(Base):
 
 
 class OrderDB(BaseModel):
+    __tablename__ = "order"
     id: int
     user_id: int
-    order_ids: List[int]
+    service_ids: List[int]
 
 
 # Зависимости для получения текущего пользователя
@@ -181,13 +182,13 @@ def add_to_order(user_id: int, service_id: int, current_user: str = Depends(get_
     order = db.query(OrderDB).filter(OrderDB.user_id == user_id).first()
 
     if not order:
-        order = OrderDB(user_id=user_id, order_ids=str([service_id]))
+        order = OrderDB(user_id=user_id, service_ids=str([service_id]))
         db.add(order)
     else:
-        current_order_ids = order.order_ids.split(",")
+        current_order_ids = order.service_ids.split(",")
         if str(service_id) not in current_order_ids:
             current_order_ids.append(str(service_id))
-            order.order_ids = ",".join(current_order_ids)
+            order.service_ids = ",".join(current_order_ids)
 
     db.commit()
     db.refresh(order)
