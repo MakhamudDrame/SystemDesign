@@ -69,9 +69,9 @@ def load_test_data():
             )
             db.add(service)
 
-    add_service("English", 1500, "English in  skype")
-    add_service("Math", 2000, "Math in skype")
-    add_service("Site", 6500, "Site in Wordpress")
+    add_service("English", 1500, "English in  skype",5)
+    add_service("Math", 2000, "Math in skype",2)
+    add_service("Site", 6500, "Site in Wordpress",3)
 
     # Создание заказа
     def add_order(user_id):
