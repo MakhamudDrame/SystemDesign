@@ -5,9 +5,9 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
 # Настройка PostgreSQL
 SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/profi_db"
@@ -27,6 +27,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Настройка OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 
 # Модели данных
@@ -72,7 +73,7 @@ class ServiceDB(Base):
 
 
 class OrderDB(Base):
-    __tablename__ = "order"
+    __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     service_ids = Column(String)
@@ -96,13 +97,13 @@ async def get_current_client(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
 
 
-    # Создание и проверка JWT токенов
+# Создание и проверка JWT токенов
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -154,7 +155,7 @@ def get_user_by_username(username: str, current_user: str = Depends(get_current_
 
 
 # Создание услуги
-@app.post("/service", response_model=Service)
+@app.post("/services", response_model=Service)
 def create_service(service: Service, current_user: str = Depends(get_current_client)):
     db = SessionLocal()
     db_service = ServiceDB(**service.dict())
@@ -165,30 +166,41 @@ def create_service(service: Service, current_user: str = Depends(get_current_cli
     return service
 
 
-# Получение списка услуг
-@app.get("/service", response_model=List[Service])
-def get_services( current_user: str = Depends(get_current_client)):
+# Получение услуг пользователя
+@app.get("/services", response_model=List[Service])
+def get_user_services(user_id: int, current_user: str = Depends(get_current_client)):
     db = SessionLocal()
-    service = db.query(ServiceDB).all()
+    service = db.query(ServiceDB).filter(ServiceDB.user_id == user_id).all()
     db.close()
     return service
 
 
+# Создание заказа
+@app.post("/orders", response_model=Order)
+def create_order(order: Order, current_user: str = Depends(get_current_client)):
+    db = SessionLocal()
+    db_order = OrderDB(**order.dict())
+    db.add(db_order)
+    db.commit()
+    db.refresh(db_order)
+    db.close()
+    return order
+
 
 # Добавление услуги в заказ
 @app.post("/orders/{user_id}", response_model=Order)
-def add_to_order(user_id: int, service_id: int, current_user: str = Depends(get_current_client)):
+def add_to_order(user_id: int, service_ids: int, current_user: str = Depends(get_current_client)):
     db = SessionLocal()
     order = db.query(OrderDB).filter(OrderDB.user_id == user_id).first()
 
     if not order:
-        order = OrderDB(user_id=user_id, service_ids=str([service_id]))
+        order = OrderDB(user_id=user_id, service_ids=str([service_ids]))
         db.add(order)
     else:
-        current_order_ids = order.service_ids.split(",")
-        if str(service_id) not in current_order_ids:
-            current_order_ids.append(str(service_id))
-            order.service_ids = ",".join(current_order_ids)
+        current_order_ids = orders.service_ids.split(",")
+        if str(service_ids) not in current_order_ids:
+            current_order_ids.append(str(service_ids))
+            orders.service_ids = ",".join(current_order_ids)
 
     db.commit()
     db.refresh(order)
@@ -207,7 +219,7 @@ def get_orders(user_id: int, current_user: str = Depends(get_current_client)):
         raise HTTPException(status_code=404, detail="Order not found")
 
     return order
-
+    
 
 # Запуск сервера
 # http://localhost:8000/openapi.json swagger
