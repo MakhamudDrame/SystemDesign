@@ -169,9 +169,9 @@ def create_service(service: Service, current_user: str = Depends(get_current_cli
 @app.get("/service", response_model=List[Service])
 def get_services( current_user: str = Depends(get_current_client)):
     db = SessionLocal()
-    services = db.query(ServiceDB).filter(ServiceDB.user_id == user_id).all()
+    service = db.query(ServiceDB).all()
     db.close()
-    return services
+    return service
 
 
 
