@@ -1,13 +1,14 @@
 import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from profi_ru import Base, UserDB,ServiceDB, OrderDB
 from passlib.context import CryptContext
-from profi_ru import Base, UserDB, ServiceDB, OrderDB
 
 # Настройка PostgreSQL
 SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/profi_db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 # Настройка паролей
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -32,62 +33,57 @@ def load_test_data():
             )
             db.add(user)
 
-    # Создание пользователей
-    add_user(
-        username="admin",
-        first_name="Admin",
-        last_name="Admin",
-        hashed_password=pwd_context.hash("admin001"),
-        email="admin@profi.com",
-    )
 
+        # Создание тестовых пользователей
     add_user(
         username="user1",
         first_name="Ivan",
         last_name="Ivanov",
-        hashed_password=pwd_context.hash("user123"),
-        email="ivan.ivanov@profi.com",
+        hashed_password=pwd_context.hash("password1"),
+        email="ivan.ivanov@example.com",
     )
 
     add_user(
         username="user2",
-        first_name="Igor",
-        last_name="Pavlov",
-        hashed_password=pwd_context.hash("user456"),
-        email="igor.pavlov@profi.com",
+        first_name="Anna",
+        last_name="Petrova",
+        hashed_password=pwd_context.hash("password2"),
+        email="anna.petrova@example.com",
     )
 
-    # Создание услуги
-    def add_service(name, price, description,stock):
+
+
+        # Создание услуги
+    def add_service(name, price, description):
         service = db.query(ServiceDB).filter(ServiceDB.name == name).first()
         if not service:
             service = ServiceDB(
                 name=name,
                 price=price,
                 description=description,
-                stock=stock,
             )
             db.add(service)
 
-    add_service("English", 1500, "English in  skype",5)
-    add_service("Math", 2000, "Math in skype",2)
-    add_service("Site", 6500, "Site in Wordpress",3)
+    add_service("English", 1500, "English in  skype")
+    add_service("Math", 2000, "Math in skype")
+    add_service( "Site", 6500, "Site in Wordpress")
 
-    # Создание заказа
-    def add_order(user_id):
-        order = db.query(OrderDB).filter(OrderDB.user_id == user_id).first()
-        if not order:
-            order = OrderDB(user_id=user_id)
-            db.add(order)
-
-    add_order(1)  # admin
-    add_order(2)  # user1
-    add_order(3)  # user2
-
-
+    
 
     db.commit()
     db.close()
+
+
+def wait_for_db(retries=10, delay=5):
+    for _ in range(retries):
+        try:
+            engine.connect()
+            print("Database is ready!")
+            return
+        except Exception as e:
+            print(f"Database not ready yet: {e}")
+            time.sleep(delay)
+    raise Exception("Could not connect to the database")
 
 
 if __name__ == "__main__":
