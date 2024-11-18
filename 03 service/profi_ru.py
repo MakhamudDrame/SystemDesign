@@ -71,11 +71,11 @@ class ServiceDB(Base):
     description = Column(String, index=True)
 
 
-class OrderDB(BaseModel):
+class OrderDB(Base):
     __tablename__ = "order"
-    id: int
-    user_id: int
-    service_ids: List[int]
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    service_ids = Column(String)
 
 
 # Зависимости для получения текущего пользователя
