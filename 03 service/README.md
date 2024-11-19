@@ -1,7 +1,7 @@
 ## Сервис профи.ру
 #### Комманды:
 #### docker-compose down -v && docker-compose up --build
-#### docker exec -it <container_id> psql -U postgres -d profi_db   где <container_id> — ID контейнера.
+#### docker exec -it <container_id> psql -U postgres -d profi_db  , где <container_id> — ID контейнера.
 #### SELECT * FROM users;
 #### SELECT * FROM service;
 
