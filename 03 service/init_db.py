@@ -37,10 +37,10 @@ def load_test_data():
         # Создание тестовых пользователей
     add_user(
         username="user1",
-        first_name="Ivan",
-        last_name="Ivanov",
+        first_name="Igor",
+        last_name="Petrov",
         hashed_password=pwd_context.hash("password1"),
-        email="ivan.ivanov@example.com",
+        email="igor.petrov@example.com",
     )
 
     add_user(
@@ -53,21 +53,7 @@ def load_test_data():
 
 
 
-        # Создание услуги
-    def add_service(name, price, description):
-        service = db.query(ServiceDB).filter(ServiceDB.name == name).first()
-        if not service:
-            service = ServiceDB(
-                name=name,
-                price=price,
-                description=description,
-            )
-            db.add(service)
-
-    add_service("English", 1500, "English in  skype")
-    add_service("Math", 2000, "Math in skype")
-    add_service( "Site", 6500, "Site in Wordpress")
-
+  
     
 
     db.commit()
