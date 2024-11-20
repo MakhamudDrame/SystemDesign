@@ -200,7 +200,7 @@ def add_to_order(user_id: int, service_ids: int, current_user: str = Depends(get
         current_order_ids = orders.service_ids.split(",")
         if str(service_ids) not in current_order_ids:
             current_order_ids.append(str(service_ids))
-            orders.service_ids = ",".join(current_order_ids)
+            order.service_ids = ",".join(current_order_ids)
 
     db.commit()
     db.refresh(order)
